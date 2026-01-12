@@ -6,11 +6,100 @@ import Train from "./Train.jsx";
 
 const Simulation = () => {
   const cells = [];
-  const stations = [2, 6, 9, 12];
-  const tracks = [0, 1, 2, 4, 5, 7, 8, 10, 11];
-  const [runningStationIndex, setrunningStationIndex] = useState([0, 1]);
-  const [runningPositionIndex, setrunningPositionIndex] = useState([0, 0]);
+  const stationsindex = [2, 5, 8, 11];
+  const tracksindex = [0, 1, 3, 4, 6, 7, 9, 10];
+  const [runningStationIndex, setrunningStationIndex] = useState([0]);
+  const [runningPositionIndex, setrunningPositionIndex] = useState([0]);
 
+  const [stations, setstations] = useState([
+    {
+      id: 0,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 1,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 2,
+      type: "station",
+      name: "Station A",
+      status: "idle",
+      tracks: ["entry", "loop up", "loop down", "main"],
+      pos: ["none", "none", "none", "none"],
+      signal: ["red", "red", "red", "red"],
+    },
+    {
+      id: 3,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 4,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 5,
+      type: "track",
+      status: "idle",
+      tracks: ["entry", "loop up", "loop down", "main"],
+      pos: ["none", "none", "none", "none"],
+      signal: ["red", "red", "red", "red"],
+    },
+    {
+      id: 6,
+      type: "track",
+      status: "idle",
+    },
+    {
+      id: 7,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 8,
+      type: "track",
+      status: "idle",
+      tracks: ["entry", "loop up", "loop down", "main"],
+      pos: ["none", "none", "none", "none"],
+      signal: ["red", "red", "red", "red"],
+    },
+    {
+      id: 9,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 10,
+      type: "track",
+      status: "idle",
+      pos: "none",
+      signal: "green",
+    },
+    {
+      id: 11,
+      type: "track",
+      status: "idle",
+      tracks: ["entry", "loop up", "loop down", "main"],
+      pos: ["none", "none", "none", "none"],
+      signal: ["red", "red", "red", "red"],
+    },
+  ]);
   useEffect(() => {
     const interval = setInterval(() => {
       let indexes = [];
@@ -45,11 +134,17 @@ const Simulation = () => {
 
   for (let i = 0; i < 12; i++) {
     if (i == 2 || i === 5 || i === 8 || i === 11) {
-      cells.push(
-        <div key={i}>
-          <Station num={i} />
-        </div>
-      );
+      runningStationIndex.includes(i)
+        ? cells.push(
+            <div key={i} pos={runningPositionIndex[0]}>
+              <Station num={i} pos={runningPositionIndex[0]} />
+            </div>
+          )
+        : cells.push(
+            <div key={i}>
+              <Station num={i} pos={12} />
+            </div>
+          );
     } else {
       runningStationIndex.includes(i)
         ? cells.push(
@@ -59,7 +154,7 @@ const Simulation = () => {
           )
         : cells.push(
             <div key={i} className="grid items-center">
-              <Track pos={11} />
+              <Track pos={12} />
             </div>
           );
     }

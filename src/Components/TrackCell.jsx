@@ -12,9 +12,17 @@ const TrackCell = ({ type, num, val }) => {
     type === TRACK.EMPTY &&
     (num === 1 || num === 2 || num === 4 || num === 5)
   ) {
-    if (val === 0 || val === 1 || val === 8 || val === 9) {
+    if (
+      val === 0 ||
+      val === 1 ||
+      val === 2 ||
+      val === 3 ||
+      (num === 5 && val === 9) ||
+      (num === 1 && val === 9)
+    ) {
       return <div className="w-7 h-7" />;
     } else {
+      // return <div className="w-7 h-7" />;
       return <div className="w-7 h-7 border-2 border-amber-400" />;
     }
   }
