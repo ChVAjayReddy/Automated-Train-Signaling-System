@@ -4,7 +4,7 @@ import { IoTrain } from "react-icons/io5";
 const Train = () => {
   return (
     <div className="flex justify-center items-center">
-      <IoTrain style={{ rotate: "270deg" }} size={25} />
+      <IoTrain style={{ rotate: "270deg" }} size={28} />
     </div>
   );
 };
