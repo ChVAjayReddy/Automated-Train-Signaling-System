@@ -22,8 +22,8 @@ const TrackCell = ({ type, num, val }) => {
     ) {
       return <div className="w-7 h-7" />;
     } else {
-      // return <div className="w-7 h-7" />;
-      return <div className="w-7 h-7 border-2 border-amber-400" />;
+      return <div className="w-7 h-7" />;
+      // return <div className="w-7 h-7 border-2 border-amber-400" />;
     }
   }
 
