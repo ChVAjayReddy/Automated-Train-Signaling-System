@@ -1,377 +1,300 @@
 import React, { useEffect, useState } from "react";
-import Station from "./Station.jsx";
-import TrackCell from "./TrackCell.jsx";
-import Track from "./Track.jsx";
-import Train from "./Train.jsx";
-import { TbHomeSignal } from "react-icons/tb";
+import Station from "./Station";
+import Track from "./Track";
 
 const Simulation = () => {
-  const cells = [];
-  let stations = [2, 5];
-
-  const [stationsset, setstationsset] = useState(stations);
-  const [runningStationIndex, setrunningStationIndex] = useState([]);
-  const [runningPositionIndex, setrunningPositionIndex] = useState([]);
-  const [blockedStations, setblockedStations] = useState([]);
-  const [manualOverride, setmanualOverride] = useState([]);
-  const [trains, settrains] = useState([]);
-  const [traincounter, settraincounter] = useState(0);
-  const [stationsojupdate, setstationsojupdate] = useState([
+  const [runningPositions, setrunningPositions] = useState([]);
+  const [runningStations, setrunningStations] = useState([]);
+  let emptyTrack = [0, 1, 3, 4, 6, 7];
+  let stationTrack = [2, 5];
+  const [stations, setstations] = useState([
     {
-      station: 2,
-      stationLoopSignals: ["red", "red", "red"],
-      homeSignal: "red",
-      stationLoopOutSignals: ["red", "red", "red"],
+      id: 2,
+      home: "red",
+      homestatus: false,
+      loop: ["red", "red", "red"],
+
+      loopstatus: [false, false, false],
+      outer: ["red", "red", "red"],
     },
     {
-      station: 5,
-      stationLoopSignals: ["red", "red", "red"],
-      homeSignal: "red",
-      stationLoopOutSignals: ["red", "red", "red"],
+      id: 5,
+      home: "red",
+      homestatus: false,
+      loop: ["red", "red", "red"],
+      loopstatus: [false, false, false],
+      outer: ["red", "red", "red"],
     },
   ]);
-  // const [trackline, settrackline] = useState([
-  //   {
-  //     id: 0,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 1,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 2,
-  //     type: "station",
-  //     name: "Station A",
-  //     status: "idle",
-  //     tracks: ["entry", "loop up", "loop down", "main"],
-  //     pos: ["none", "none", "none", "none"],
-  //     signal: ["red", "red", "red", "red"],
-  //   },
-  //   {
-  //     id: 3,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 4,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 5,
-  //     type: "station",
-  //     status: "idle",
-  //     tracks: ["entry", "loop up", "loop down", "main"],
-  //     pos: ["none", "none", "none", "none"],
-  //     signal: ["red", "red", "red", "red"],
-  //   },
-  //   {
-  //     id: 6,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 7,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 8,
-  //     type: "station",
-  //     status: "idle",
-  //     tracks: ["entry", "loop up", "loop down", "main"],
-  //     pos: ["none", "none", "none", "none"],
-  //     signal: ["red", "red", "red", "red"],
-  //   },
-  //   {
-  //     id: 9,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 10,
-  //     type: "track",
-  //     status: "idle",
-  //     pos: -1,
-  //     signal: "green",
-  //   },
-  //   {
-  //     id: 11,
-  //     type: "track",
-  //     status: "idle",
-  //     tracks: ["entry", "loop up", "loop down", "main"],
-  //     pos: ["none", "none", "none", "none"],
-  //     signal: ["red", "red", "red", "red"],
-  //   },
-  // ]);
-  function addtrain() {
-    let traincountertemp = traincounter + 1;
-    settraincounter(traincountertemp);
-    settrains((prevtrains) => [...prevtrains, traincountertemp]);
-    setrunningStationIndex((prevrunningStationIndex) => [
-      ...prevrunningStationIndex,
-      0,
-    ]);
-    setrunningPositionIndex((prevrunningPositionIndex) => [
-      ...prevrunningPositionIndex,
-      0,
-    ]);
+  const [automaticBlockedStations, setautomaticBlockedStations] = useState([]);
+  const [manualBlockedStations, setmanualBlockedStations] = useState([]);
+  const [trainscount, settrainscount] = useState(0);
+  const [trainid, settrainid] = useState([]);
+  const [stationsblocked, setstationsblocked] = useState([2, 5]);
+  let track = [];
+  function addTrain() {
+    if (runningStations.includes(0)) {
+      alert(
+        "Can't enter the train, as train is already running in the same section"
+      );
+      return;
+    }
+    let temp = trainscount + 1;
+    settrainscount(temp);
+    settrainid((trainid) => [...trainid, temp]);
+    setrunningPositions((prevrunningPositions) => [...prevrunningPositions, 0]);
+    setrunningStations((prevrunningStations) => [...prevrunningStations, 1]);
   }
-  function handleSignal(station, signal) {
-    if (signal === "green") {
-      setmanualOverride((prevmanualOverride) => [
-        ...prevmanualOverride,
-        station,
-      ]);
+
+  function handleSignal(section) {
+    if (manualBlockedStations.includes(section)) {
+      let temp = manualBlockedStations.filter(
+        (sectionno) => sectionno != section
+      );
+      setmanualBlockedStations(temp);
     } else {
-      let temp = manualOverride.filter((stationid) => stationid !== station);
-      setmanualOverride(temp);
+      setmanualBlockedStations((manualBlockedStations) => [
+        ...manualBlockedStations,
+        section,
+      ]);
     }
   }
-  function updateStationObject(station, signalType, color) {
-    let temp = stationsojupdate.map((stations) =>
-      stations.station === station
-        ? { ...stations, homeSignal: color === "green" ? "red" : "green" }
-        : stations
-    );
-
-    setstationsojupdate(temp);
-    if (stationsset.includes(station)) {
-      let tempstation = stationsset.filter((num) => num != station);
-      setstationsset(tempstation);
-    } else {
-      setstationsset((prevstationsset) => [...prevstationsset, station]);
+  function handleStationSignals(stationId, signalType, signalId = 4) {
+    if (signalType === "home") {
+      let temp = stations.map((station, index) =>
+        station.id === stationId
+          ? {
+              ...station,
+              home: station.home === "red" ? "green" : "red",
+              homestatus: station.homestatus ? false : true,
+            }
+          : station
+      );
+      console.log(temp);
+      setstations(temp);
+      let removestation = temp
+        .filter((station) => station.homestatus === false)
+        .map((station) => station.id);
+      console.log(removestation);
+      setstationsblocked(removestation);
     }
   }
   useEffect(() => {
     const interval = setInterval(() => {
-      let indexes = [];
-      let temp = runningPositionIndex.map((pos, index) => {
-        if (pos === 0) {
-          if (
-            manualOverride.includes(runningStationIndex[index]) ||
-            blockedStations.includes(runningStationIndex[index]) ||
-            stationsset.includes(runningStationIndex[index])
-          ) {
-            pos === 0;
+      let nextStation = [];
+      let updaterunningPositions = runningPositions.map((position, index) => {
+        if (stationTrack.includes(runningStations[index])) {
+          if (position === 2) {
+            if (stationsblocked.includes(runningStations[index])) {
+              return 2;
+            } else {
+              return position + 1;
+            }
           } else {
-            pos = pos + 1;
-          }
-        } else if (pos === 9) {
-          indexes.push(index);
-          pos = 0;
-        } else {
-          pos = pos + 1;
-        }
-        return pos;
-      });
-      setrunningPositionIndex(temp);
-      let updaterunningstations = runningStationIndex.map((station, index) =>
-        indexes.includes(index) ? station + 1 : station
-      );
-      setrunningStationIndex(updaterunningstations);
-      let blocked = updaterunningstations.map((station, index) =>
-        temp[index] > 0 ? station : station - 1
-      );
+            if (position === 9) {
+              nextStation.push(index);
+              return 0;
+            } else {
+              if (position === 3) {
+                if (runningStations[index] === 2) {
+                  setstationsblocked((stationsblocked) => [
+                    ...stationsblocked,
+                    3,
+                  ]);
+                  let temp = stations.map((station, index) =>
+                    station.id === runningStations[index]
+                      ? {
+                          ...station,
+                          home: station.home === "red" ? "green" : "red",
+                          homestatus: station.homestatus ? false : true,
+                        }
+                      : station
+                  );
 
-      setblockedStations(blocked);
-      let tempstationsset = stationsojupdate.map((station, index) => {
-        if (updaterunningstations.includes(station.station)) {
-          let posindex = updaterunningstations.indexOf(station.station);
-          if (temp[posindex] > 0) {
-            return { ...station, homeSignal: "red" };
-          } else {
-            return station;
+                  setstations(temp);
+                }
+                if (runningStations[index] === 5) {
+                  setstationsblocked((stationsblocked) => [
+                    ...stationsblocked,
+                    5,
+                  ]);
+                  let temp = stations.map((station, index) =>
+                    station.id === runningStations[index]
+                      ? {
+                          ...station,
+                          home: station.home === "red" ? "green" : "red",
+                          homestatus: station.homestatus ? false : true,
+                        }
+                      : station
+                  );
+
+                  setstations(temp);
+                }
+              }
+              return position + 1;
+            }
           }
         } else {
-          return station;
+          if (position === 9) {
+            if (
+              automaticBlockedStations.includes(runningStations[index]) ||
+              manualBlockedStations.includes(runningStations[index])
+            ) {
+              return 9;
+            } else {
+              nextStation.push(index);
+              return 0;
+            }
+          } else {
+            return position + 1;
+          }
         }
       });
-      setstationsojupdate(tempstationsset);
+      setrunningPositions(updaterunningPositions);
+      let updaterunningStations = runningStations.map((station, index) =>
+        nextStation.includes(index)
+          ? station + 1
+          : automaticBlockedStations.includes(station) ||
+            manualBlockedStations.includes(station)
+          ? station
+          : station
+      );
+      setrunningStations(updaterunningStations);
+      let updateautomaticBlockedStations = updaterunningStations.map(
+        (station) => station - 1
+      );
+      setautomaticBlockedStations(updateautomaticBlockedStations);
     }, 1000);
     return () => clearInterval(interval);
   }, [
-    runningPositionIndex,
-    runningStationIndex,
-    blockedStations,
-    manualOverride,
-    stationsset,
-    stationsojupdate,
+    runningPositions,
+    runningStations,
+    automaticBlockedStations,
+    manualBlockedStations,
+    stationTrack,
+    stationsblocked,
+    stations,
   ]);
-
   for (let i = 0; i < 8; i++) {
-    if (stations.includes(i)) {
-      let temp = stationsojupdate.filter((stations) => stations.station == i);
-      if (runningStationIndex.includes(i)) {
-        let stationindex = runningStationIndex.indexOf(i);
-        cells.push(
+    if (stationTrack.includes(i)) {
+      let stationdata = stations.filter((station) => station.id === i);
+      console.log(stationdata);
+      if (runningStations.includes(i)) {
+        let position = runningPositions[runningStations.indexOf(i)];
+        track.push(
           <div key={i}>
             <Station
-              num={i}
-              pos={runningPositionIndex[stationindex]}
-              home={temp[0].homeSignal}
-              up={temp[0].stationLoopOutSignals[0]}
-              main={temp[0].stationLoopOutSignals[1]}
-              down={temp[0].stationLoopOutSignals[1]}
+              trainPosition={position}
+              home={stationdata[0].home}
+              up={stationdata[0].outer[0]}
+              down={stationdata[0].outer[2]}
+              main={stationdata[0].outer[1]}
+              section={i}
+              handleSignal={handleSignal}
             />
           </div>
         );
       } else {
-        let temp = stationsojupdate.filter((stations) => stations.station == i);
-        cells.push(
+        track.push(
           <div key={i}>
             <Station
-              num={i}
-              pos={12}
-              home={temp[0].homeSignal}
-              up={temp[0].stationLoopOutSignals[0]}
-              main={temp[0].stationLoopOutSignals[1]}
-              down={temp[0].stationLoopOutSignals[1]}
+              home={stationdata[0].home}
+              up={stationdata[0].outer[0]}
+              down={stationdata[0].outer[2]}
+              main={stationdata[0].outer[1]}
             />
           </div>
         );
       }
     } else {
-      if (runningStationIndex.includes(i)) {
-        if (blockedStations.includes(i) || manualOverride.includes(i)) {
-          let stationindex = runningStationIndex.indexOf(i);
-          cells.push(
-            <div key={i} className="grid items-center">
-              <Track
-                pos={runningPositionIndex[stationindex]}
-                signal={"red"}
-                station={i}
-                handleSignal={handleSignal}
-              />
-            </div>
-          );
-        } else {
-          let stationindex = runningStationIndex.indexOf(i);
-          cells.push(
-            <div key={i} className="grid items-center">
-              <Track
-                pos={runningPositionIndex[stationindex]}
-                signal={"green"}
-                station={i}
-                handleSignal={handleSignal}
-              />
-            </div>
-          );
-        }
+      if (
+        automaticBlockedStations.includes(i) ||
+        manualBlockedStations.includes(i)
+      ) {
+        let position = runningPositions[runningStations.indexOf(i)];
+        track.push(
+          <div className="grid align-middle" key={i}>
+            <Track
+              trainPosition={position}
+              signal="red"
+              section={i}
+              handleSignal={handleSignal}
+            />
+          </div>
+        );
+      } else if (runningStations.includes(i)) {
+        let position = runningPositions[runningStations.indexOf(i)];
+        track.push(
+          <div className="grid align-middle" key={i}>
+            <Track
+              trainPosition={position}
+              section={i}
+              signal="green"
+              handleSignal={handleSignal}
+            />
+          </div>
+        );
       } else {
-        if (blockedStations.includes(i) || manualOverride.includes(i)) {
-          let stationindex = runningStationIndex.indexOf(i);
-          cells.push(
-            <div key={i} className="grid items-center">
-              <Track
-                pos={runningPositionIndex[stationindex]}
-                signal={"red"}
-                station={i}
-                handleSignal={handleSignal}
-              />
-            </div>
-          );
-        } else {
-          cells.push(
-            <div key={i} className="grid items-center">
-              <Track
-                pos={12}
-                signal={"green"}
-                station={i}
-                handleSignal={handleSignal}
-              />
-            </div>
-          );
-        }
+        track.push(
+          <div className="grid align-middle" key={i}>
+            <Track
+              trainPosition={12}
+              signal="green"
+              section={i}
+              handleSignal={handleSignal}
+            />
+          </div>
+        );
       }
     }
   }
 
   return (
     <>
-      <div className="border-2 border-blue-800 col-start-1 col-end-4 grid grid-cols-4 grid-rows-3">
-        {cells}
+      <div className="border-2 border-blue-800 col-start-1 col-end-4 grid grid-cols-4 grid-rows-3 ">
+        {track}
       </div>
-      <div className="flex flex-col gap-10">
-        <button
-          style={{
-            height: "20px",
-            width: "20px",
-          }}
-          onClick={() => addtrain()}
-        >
-          add train
-        </button>
-        <div className="">
-          {stationsojupdate.map((station, index) => (
+      <button onClick={() => addTrain()}>Add Train</button>
+      {stations.map((station) => (
+        <div key={station.id}>
+          <p>Station {station.id}</p>
+          {station.loop.map((signal, index) => (
             <div key={index}>
-              <p>Station No {index + 1}</p>
-              {runningStationIndex.includes(station.station - 1)
-                ? "Train entering station Please give signal"
-                : "Nill"}
-              <p>Loop Signals</p>
-              <div className="flex gap-1">
-                {station.stationLoopSignals.map((signal, index) => (
-                  <button
-                    key={index}
-                    style={{
-                      backgroundColor: signal,
-                      height: "20px",
-                      width: "20px",
-                      borderRadius: "10%",
-                    }}
-                  ></button>
-                ))}
-              </div>
-              <p>Home Signal </p>
               <button
-                onClick={() =>
-                  updateStationObject(
-                    station.station,
-                    "home",
-                    station.homeSignal
-                  )
-                }
                 style={{
-                  backgroundColor: station.homeSignal,
-                  height: "20px",
-                  width: "20px",
+                  border: "1px solid black",
+                  backgroundColor: signal,
+                  width: "20PX",
+                  height: "20PX",
                 }}
               ></button>
-              <p>Out Loop Signals</p>
-              <div className="flex gap-1">
-                {station.stationLoopOutSignals.map((signal, index) => (
-                  <button
-                    key={index}
-                    style={{
-                      backgroundColor: signal,
-                      height: "20px",
-                      width: "20px",
-                    }}
-                  ></button>
-                ))}
-              </div>
+            </div>
+          ))}
+          <p>Home</p>
+          <button
+            style={{
+              border: "1px solid black",
+              backgroundColor: station.home,
+              width: "20PX",
+              height: "20PX",
+            }}
+            onClick={() => handleStationSignals(station.id, "home")}
+          ></button>
+          <p>Outer</p>
+          {station.outer.map((signal, index) => (
+            <div key={index}>
+              <button
+                style={{
+                  border: "1px solid black",
+                  backgroundColor: signal,
+                  width: "20PX",
+                  height: "20PX",
+                }}
+              ></button>
             </div>
           ))}
         </div>
-      </div>
+      ))}
     </>
   );
 };

@@ -165,3 +165,379 @@ Score: 9 / 10
 3️⃣ Populate right panel with real data
 4️⃣ Slightly soften track colors
 5️⃣ Remove unnecessary borders (use spacing instead)
+
+//
+import React, { useEffect, useState } from "react";
+import Station from "./Station";
+import Track from "./Track";
+
+const Simulation = () => {
+let trackdata = [
+{
+id: 0,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+previous: "Start",
+currentPosition: -1,
+next: 1,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+id: 1,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+previous: 0,
+next: 2,
+currentPosition: -1,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+id: 2,
+type: "station",
+startPosition: 0,
+lastPosition: 1,
+currentPosition: -1,
+previous: 1,
+signal: "red",
+isTrainRunning: false,
+isSectionBlocked: false,
+next: [
+{
+type: "up-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 2,
+next: 3,
+currentPosition: -1,
+signal: "red",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+type: "main-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 2,
+next: 3,
+signal: "red",
+currentPosition: -1,
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+type: "down-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 2,
+next: 3,
+signal: "red",
+currentPosition: -1,
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+],
+},
+{
+id: 3,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+currentPosition: -1,
+previous: 2,
+next: 4,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+id: 4,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+previous: 3,
+next: 5,
+currentPosition: -1,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+id: 5,
+type: "station",
+startPosition: 0,
+lastPosition: 1,
+previous: 4,
+currentPosition: -1,
+signal: "red",
+isTrainRunning: false,
+isSectionBlocked: false,
+next: [
+{
+type: "up-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 4,
+next: 5,
+signal: "red",
+currentPosition: -1,
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+type: "main-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 4,
+next: 5,
+currentPosition: -1,
+signal: "red",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+type: "down-track",
+startPosition: 0,
+lastPosition: 6,
+previous: 4,
+next: 5,
+signal: "red",
+currentPosition: -1,
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+],
+},
+{
+id: 6,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+previous: 5,
+next: 7,
+currentPosition: -1,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+{
+id: 7,
+type: "non-station",
+startPosition: 0,
+lastPosition: 9,
+previous: 6,
+next: "End",
+currentPosition: -1,
+signal: "green",
+isTrainRunning: false,
+isSectionBlocked: false,
+},
+];
+const [track, settrack] = useState(trackdata);
+function addtrain() {
+let temp = track.map((station) =>
+station.id === 0
+? { ...station, isTrainRunning: true, currentPosition: 0 }
+: station
+);
+settrack(temp);
+}
+function handleSignal(station) {
+let temp = track.map((section) => {
+if (section.id === station) {
+return {
+...section,
+isSectionBlocked: section.isSectionBlocked ? false : true,
+signal: section.signal === "green" ? "red" : "green",
+};
+} else {
+return { ...section };
+}
+});
+settrack(temp);
+}
+let trackline = [];
+useEffect(() => {
+const interval = setInterval(() => {
+let nextStation = [];
+let tempcurrentPosition = track.map((section) => {
+if (section.isTrainRunning) {
+if (section.currentPosition === 9) {
+nextStation.push(section.next);
+return { ...section, currentPosition: -1, isTrainRunning: false };
+} else {
+if (
+section.isSectionBlocked === true &&
+section.currentPosition === 0
+) {
+return { ...section, currentPosition: 0 };
+}
+if (section.currentPosition === -1) {
+return { ...section };
+} else {
+return {
+...section,
+currentPosition: section.currentPosition + 1,
+};
+}
+}
+}
+return section;
+});
+let tempUpdateStations = tempcurrentPosition.map((section) => {
+if (nextStation.includes(section.id)) {
+return { ...section, currentPosition: 0, isTrainRunning: true };
+} else {
+return { ...section };
+}
+});
+console.log(tempUpdateStations);
+let temprelease = [];
+let tempBlockedTrack = tempUpdateStations.map((section) => {
+if (section.currentPosition > 0) {
+temprelease.push(section.id - 1);
+return { ...section, isSectionBlocked: true, signal: "red" };
+} else {
+return { ...section, isSectionBlocked: false };
+}
+});
+
+      let tempreleaseBlocked = tempBlockedTrack.map((section) => {
+        if (temprelease.includes(section.id)) {
+          return { ...section, isSectionBlocked: false, signal: "green" };
+        } else {
+          return { ...section };
+        }
+      });
+
+      settrack(tempreleaseBlocked);
+    }, 1000);
+    return () => clearInterval(interval);
+
+}, [track]);
+for (let i = 0; i < track.length; i++) {
+if (track[i].type === "station") {
+if (
+track[i].isTrainRunning === false &&
+track[i].isSectionBlocked === false
+) {
+trackline.push(
+
+<div>
+<Station
+              up={track[i].next[0].signal}
+              main={track[i].next[1].signal}
+              down={track[i].next[2].signal}
+              pos={12}
+              num={i}
+              home={track[i].signal}
+            />
+</div>
+);
+}
+} else {
+if (
+track[i].isTrainRunning === false &&
+track[i].isSectionBlocked === false
+) {
+trackline.push(
+<div>
+<Track
+              pos={12}
+              signal={track[i].signal}
+              station={i}
+              handleSignal={handleSignal}
+            />
+</div>
+);
+}
+if (
+track[i].isTrainRunning === true &&
+track[i].isSectionBlocked === false
+) {
+trackline.push(
+<div>
+<Track
+              pos={track[i].currentPosition}
+              signal={track[i].signal}
+              station={i}
+              handleSignal={handleSignal}
+            />
+</div>
+);
+}
+if (
+track[i].isTrainRunning === true &&
+track[i].isSectionBlocked === true
+) {
+trackline.push(
+<div>
+<Track
+              pos={track[i].currentPosition}
+              signal={track[i].signal}
+              station={i}
+              handleSignal={handleSignal}
+            />
+</div>
+);
+}
+if (
+track[i].isTrainRunning === false &&
+track[i].isSectionBlocked === true
+) {
+trackline.push(
+<div>
+<Track
+              pos={track[i].currentPosition}
+              signal={track[i].signal}
+              station={i}
+              handleSignal={handleSignal}
+            />
+</div>
+);
+}
+}
+}
+return (
+<>
+{trackline}
+<button onClick={() => addtrain()}>add train</button>
+</>
+);
+};
+
+export default Simulation;
+
+///
+{num === 2 || num === 5 || num === 8 || num === 11
+? stationLayout.map((row, i) =>
+i === 3? (
+<div key={i} className="flex ">
+{row.map((cell, j) =>
+j === pos ? (
+<Train />
+) : (
+<TrackCell key={j} type={cell} num={i} val={j} />
+)
+)}
+</div>
+) : (
+<div key={i} className="flex ">
+{row.map((cell, j) => (
+<TrackCell key={j} type={cell} num={i} val={j} />
+))}
+</div>
+)
+)
+: stationLayout.map((row, i) => (
+<div key={i} className="flex ">
+{row.map((cell, j) => (
+<TrackCell key={j} type={cell} num={i} val={j} />
+))}
+</div>
+))}
