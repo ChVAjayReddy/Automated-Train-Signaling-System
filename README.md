@@ -517,6 +517,7 @@ export default Simulation;
 {num === 2 || num === 5 || num === 8 || num === 11
 ? stationLayout.map((row, i) =>
 i === 3? (
+
 <div key={i} className="flex ">
 {row.map((cell, j) =>
 j === pos ? (
@@ -541,3 +542,4 @@ j === pos ? (
 ))}
 </div>
 ))}
+///
